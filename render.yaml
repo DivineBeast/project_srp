@@ -2,11 +2,11 @@ services:
   - type: web
     name: notes-generator-app
     env: python
-    buildCommand: |
-      pip install -r requirements.txt
-      apt-get update && apt-get install -y tesseract-ocr
-    startCommand: gunicorn --bind 0.0.0.0:$PORT app:app
     plan: free
+    buildCommand: |
+      apt-get update && apt-get install -y tesseract-ocr
+      pip install -r requirements.txt
+    startCommand: gunicorn --bind 0.0.0.0:$PORT app:app
     envVars:
       - key: SECRET_KEY
         generateValue: true
@@ -16,7 +16,7 @@ services:
         fromDatabase:
           name: notes-generator-db
           property: connectionString
-    
+
   - type: pserv
     name: notes-generator-db
     env: postgresql
