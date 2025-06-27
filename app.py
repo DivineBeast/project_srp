@@ -14,7 +14,7 @@ import yt_dlp
 from werkzeug.security import generate_password_hash, check_password_hash
 
 # Configure logging
-logging.basicConfig(level=logging.DEBUG, 
+logging.basicConfig(level=logging.INFO, 
                     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
@@ -23,9 +23,20 @@ load_dotenv()
 
 app = Flask(__name__)
 
-# Configuration
-app.config['SECRET_KEY'] = os.getenv("SECRET_KEY", "your-secret-key")
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///notes_generator.db'
+# Configuration - Updated for production
+app.config['SECRET_KEY'] = os.getenv("SECRET_KEY", "your-secret-key-change-this")
+
+# Database configuration for Render (PostgreSQL)
+DATABASE_URL = os.getenv("DATABASE_URL")
+if DATABASE_URL:
+    # Handle PostgreSQL URL format for SQLAlchemy 1.4+
+    if DATABASE_URL.startswith("postgres://"):
+        DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+    app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
+else:
+    # Fallback to SQLite for local development
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///notes_generator.db'
+
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Initialize extensions
@@ -34,11 +45,14 @@ login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 
 # API keys from environment variables
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "YOUR_GEMINI_API_KEY")
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
-# Initialize the Gemini client
-genai.configure(api_key=GEMINI_API_KEY)
-model = genai.GenerativeModel("gemini-1.5-flash")
+if not GEMINI_API_KEY:
+    logger.warning("GEMINI_API_KEY not found in environment variables")
+else:
+    # Initialize the Gemini client
+    genai.configure(api_key=GEMINI_API_KEY)
+    model = genai.GenerativeModel("gemini-1.5-flash")
 
 # User model
 class User(UserMixin, db.Model):
@@ -139,6 +153,9 @@ def logout():
 @login_required
 def generate_notes():
     try:
+        if not GEMINI_API_KEY:
+            return jsonify({"error": "AI service not configured"}), 500
+            
         data = request.json
         source_text = data.get('text')
         if not source_text:
@@ -159,6 +176,9 @@ def generate_notes():
 @login_required
 def generate_notes_from_image():
     try:
+        if not GEMINI_API_KEY:
+            return jsonify({"error": "AI service not configured"}), 500
+            
         if 'image' not in request.files:
             return jsonify({"error": "No image file provided"}), 400
         
@@ -184,6 +204,9 @@ def generate_notes_from_image():
 @login_required
 def generate_notes_from_video():
     try:
+        if not GEMINI_API_KEY:
+            return jsonify({"error": "AI service not configured"}), 500
+            
         data = request.json
         video_url = data.get('videoUrl')
         style = data.get('style', 'concise')
@@ -207,6 +230,9 @@ def generate_notes_from_video():
 
 def generate_notes_with_style(text, style):
     """Generate notes based on the specified style"""
+    if not GEMINI_API_KEY:
+        raise Exception("AI service not configured")
+        
     prompts = {
         'concise': f"Generate concise and well-structured learning notes for the following text. Use bullet points where appropriate and highlight key concepts: {text}",
         'detailed': f"Generate detailed learning notes with examples for the following text. Include explanations of key concepts: {text}",
@@ -248,6 +274,9 @@ def get_youtube_video_info(video_url):
 
 def generate_notes_from_video_info(video_info, style):
     """Generate notes based on video metadata using Gemini"""
+    if not GEMINI_API_KEY:
+        raise Exception("AI service not configured")
+        
     video_metadata = f"""
     YouTube Video: {video_info['title']}
     Channel: {video_info['channel']}
@@ -270,7 +299,16 @@ def generate_notes_from_video_info(video_info, style):
         logger.error(f"Error generating notes from video info: {str(e)}")
         raise Exception(f"Failed to generate notes from video: {str(e)}")
 
+# Health check endpoint for Render
+@app.route('/health')
+def health_check():
+    return jsonify({"status": "healthy"}), 200
+
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
-    app.run(debug=True)
+    
+    # Get port from environment variable or default to 5000
+    port = int(os.environ.get('PORT', 5000))
+    # Run on all interfaces for Render
+    app.run(host='0.0.0.0', port=port, debug=False)
