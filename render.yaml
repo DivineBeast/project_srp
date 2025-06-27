@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: notes-generator-app
+    env: python
+    buildCommand: |
+      pip install -r requirements.txt
+      apt-get update && apt-get install -y tesseract-ocr
+    startCommand: gunicorn --bind 0.0.0.0:$PORT app:app
+    plan: free
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: DATABASE_URL
+        fromDatabase:
+          name: notes-generator-db
+          property: connectionString
+    
+  - type: pserv
+    name: notes-generator-db
+    env: postgresql
+    plan: free
+    ipAllowList: []
