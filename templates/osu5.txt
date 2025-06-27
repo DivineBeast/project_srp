@@ -1,0 +1,163 @@
+
+**File Access Methods** define how records in a file are accessed. According to Galvin's Operating System Concepts, there are three primary methods:
+
+**1. Sequential Access**
+- Information in the file is processed in order, one record after the next
+- Based on a tape model of a file
+- Current position pointer tracks the current location in the file
+- Operations: read next, write next, reset to beginning, skip n records
+- Most common access method used by editors and compilers
+- Simple to implement and understand
+
+**2. Direct Access (Random Access)**
+- File is made up of fixed-length logical records
+- Allows programs to read and write records rapidly in no particular order
+- Based on a disk model of a file
+- Operations: read n, write n, position to n (where n is the record number)
+- Useful for immediate access to large amounts of information
+- Database systems often use this method
+
+**3. Indexed Access**
+- Constructed on top of direct access method
+- Involves building an index for the file
+- Index contains pointers to various blocks in the file
+- To find a record, first search the index, then use the pointer to access the file directly
+- Large files can have multiple levels of indexing
+- Provides efficient access for large files with complex access patterns
+
+**Performance Considerations:**
+- Sequential access is fastest for processing entire files
+- Direct access provides constant-time access to any record
+- Indexed access adds overhead but enables complex queries	
+
+
+
+✅ What is a Directory?
+
+A directory is like a folder that keeps track of files in a file system.
+It stores file names and their information like location, size, type, etc.
+📂 Types of Directory Structures
+1. Single-Level Directory
+
+    All files are in one directory.
+
+    Easy to use.
+
+    ❌ Problem: File name conflicts (e.g., two users can't have a file with the same name).
+
+    ❌ Not good for many users or files.
+
+2. Two-Level Directory
+
+    One Master Directory (MFD) and one User Directory (UFD) per user.
+
+    Solves naming conflict.
+
+    ✅ Good for user isolation.
+
+    ❌ Cannot share files or group them well.
+
+3. Tree-Structured Directory
+
+    Like a tree 🌳: Root → folders → subfolders → files.
+
+    ✅ Users can create subdirectories.
+
+    ✅ Supports absolute and relative paths.
+
+    ✅ Better organization and searching.
+
+    Common in most operating systems (e.g., Windows, Linux).
+
+4. Acyclic Graph Directory
+
+    Allows file sharing using links (hard/symbolic).
+
+    ✅ Saves space (no duplication).
+
+    ❌ Deletion is tricky (may cause dangling pointers).
+
+    ❌ Must avoid cycles.
+
+🛠️ Directory Implementation Methods
+
+    Linear List
+
+        List of file names and info.
+
+        ❌ Slow search for large directories.
+
+    Hash Table
+
+        Uses hash function to speed up search.
+
+        ✅ Fast, but needs collision handling.
+
+    B-Trees
+
+        Used for very large file systems.
+
+        ✅ Very efficient for searching and inserting files.
+
+✅ Summary Table
+Type	Sharing	Grouping	Speed	Use Case
+Single-Level	❌ No	❌ No	✅ Easy	Small systems
+Two-Level	❌ No	❌ No	✅ Better	Multi-user systems
+Tree-Structured	✅ Yes	✅ Yes	✅ Best	Most OS (Windows, etc)
+Acyclic-Graph	✅ Yes	✅ Yes	⚠️ Complex	File sharing systems
+
+
+
+
+**File Protection** controls access to files and directories.
+
+**Types of Access:**
+- **Read:** Read from the file
+- **Write:** Write or rewrite the file
+- **Execute:** Load the file into memory and execute it
+- **Append:** Write new information at the end of the file
+- **Delete:** Delete the file and free its space
+- **List:** List the name and attributes of the file
+
+**Access Control Methods:**
+
+**1. Access Control Lists (ACL)**
+- Associates with each file and directory a list of users and their permitted access
+- **Advantages:** easier to implement
+- **Disadvantages:** Length of access list may be large and hard to manage.
+
+**2. Groups**
+- Users are classified into groups
+- Access permissions defined for owner, group, and universe (others)
+- Example: **UNIX Model:** Three classes of users with three types of access (read, write, execute)
+- Represented as 9 bits: rwxrwxrwx (owner, group, others)
+
+**3. Password Protection**
+- Associate a password with each file
+- **Problems:** Number of passwords to remember, password sharing issues
+
+ Access Control Matrix
+
+    A table where:
+
+        Rows = Users or processes (domains)
+
+        Columns = Files or resources (objects)
+
+        Each cell = What that user can do with that file
+
+    ❌ Too large for real systems, so optimized using ACLs or groups.
+
+**UNIX File Protection:**
+- Uses 9-bit protection code
+- Three bits each for owner, group, and others
+- Permissions: r(read)=4, w(write)=2, x(execute)=1
+- Example: 754 = rwxr-xr-- (owner: rwx, group: r-x, others: r--)
+- **Special Bits:** setuid, setgid, sticky bit for additional control
+
+**Protection Domains:**
+- Set of access rights
+- Process operates within a protection domain
+- Domain switching allows processes to change their access rights
+- **Static:** Domain fixed for process lifetime
+- **Dynamic:** Domain can change during execution

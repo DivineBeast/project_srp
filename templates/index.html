@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personalized Notes Generator - AI Learning Notes</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" sizes="any">
+    <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='apple-touch-icon.png') }}">
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Add to header -->
+<nav class="auth-links">
+    {% if current_user.is_authenticated %}
+        <span>Welcome, {{ current_user.username }}</span>
+        <a href="{{ url_for('logout') }}">Logout</a>
+    {% else %}
+        <a href="{{ url_for('login') }}">Login</a>
+        <a href="{{ url_for('signup') }}">Sign Up</a>
+    {% endif %}
+</nav>
+
+<!-- Add CSS for auth links -->
+<style>
+.auth-links {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.auth-links a {
+    color: var(--text-primary);
+    text-decoration: none;
+    transition: color 0.3s;
+    font-weight: 500;
+}
+
+.auth-links a:hover {
+    color: var(--accent-color);
+}
+
+.auth-links span {
+    margin-right: 1rem;
+    color: var(--text-secondary);
+}
+</style>
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <div class="logo">
+                <i class="fa-solid fa-book-open-reader"></i>
+                <h1>Personalized Notes Generator</h1>
+            </div>
+            <div class="theme-toggle">
+                <button id="theme-toggle-btn" aria-label="Toggle dark/light mode">
+                    <i class="fa-solid fa-moon"></i>
+                </button>
+            </div>
+        </header>
+        <main>
+            <div class="chat-container">
+                <div id="chat-box">
+                    <div class="message bot-message">
+                        <div class="avatar">
+                            <i class="fa-solid fa-robot"></i>
+                        </div>
+                        <div class="message-content">
+                            <p>Hello! I'm your AI learning assistant. You can:</p>
+                            <ul>
+                                <li>Enter text directly</li>
+                                <li>Upload an image with text</li>
+                                <li>Provide a YouTube video link</li>
+                            </ul>
+                            <p>I'll generate personalized learning notes for you.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="style-selector">
+                    <div class="style-options">
+                        <button class="style-btn active" data-style="concise">
+                            <i class="fa-solid fa-list"></i>
+                            <span>Concise</span>
+                        </button>
+                        <button class="style-btn" data-style="detailed">
+                            <i class="fa-solid fa-book-open"></i>
+                            <span>Detailed</span>
+                        </button>
+                        <button class="style-btn" data-style="visual">
+                            <i class="fa-solid fa-diagram-project"></i>
+                            <span>Visual</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="input-section">
+                    <div class="tab-menu">
+                        <button class="tab-btn active" data-tab="text">
+                            <i class="fa-solid fa-font"></i> Text
+                        </button>
+                        <button class="tab-btn" data-tab="image">
+                            <i class="fa-solid fa-image"></i> Image
+                        </button>
+                        <button class="tab-btn" data-tab="video">
+                            <i class="fa-solid fa-video"></i> Video
+                        </button>
+                    </div>
+                    
+                    <div class="tab-content">
+                        <div class="tab-pane active" id="text-tab">
+                            <div class="input-container">
+                                <textarea id="sourceText" placeholder="Enter your text here..." rows="1"></textarea>
+                                <button id="generateNotesText" class="generate-btn">
+                                    <i class="fa-solid fa-paper-plane"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="tab-pane" id="image-tab">
+                            <div class="input-container image-upload-container">
+                                <div class="file-upload-area" id="imageUploadArea">
+                                    <i class="fa-solid fa-cloud-arrow-up"></i>
+                                    <p>Drag & drop an image or click to browse</p>
+                                    <input type="file" id="imageUpload" accept="image/*" hidden>
+                                </div>
+                                <div class="preview-container" id="imagePreviewContainer" style="display: none;">
+                                    <img id="imagePreview" src="" alt="Preview">
+                                    <button class="remove-preview" id="removeImagePreview">
+                                        <i class="fa-solid fa-xmark"></i>
+                                    </button>
+                                </div>
+                                <button id="generateNotesImage" class="generate-btn" disabled>
+                                    <i class="fa-solid fa-paper-plane"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="tab-pane" id="video-tab">
+                            <div class="input-container">
+                                <input type="text" id="videoUrl" placeholder="Enter YouTube video URL...">
+                                <button id="generateNotesVideo" class="generate-btn">
+                                    <i class="fa-solid fa-paper-plane"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+        <footer>
+            
+        </footer>
+    </div>
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
